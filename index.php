@@ -1,19 +1,33 @@
 <?php
+$requestUri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+$method = $_SERVER['REQUEST_METHOD'];
 
-$request = $_SERVER['REQUEST_URI'];
+$requestUri = rtrim($requestUri, '/');
 
-switch ($request) {
-    case '/':
-    case '':
-        echo json_encode(['message' => 'API root']);
-        break;
-
-    case '/test':
-        require __DIR__ . '/api/test.php';
-        break;
-
-    default:
-        http_response_code(404);
-        echo json_encode(['error' => 'Rota não encontrada']);
-        break;
+if ($requestUri === '' || $requestUri === '/api') {
+    echo json_encode(['message' => 'API root']);
+    exit;
 }
+
+if (str_starts_with($requestUri, '/api/contas')) {
+    // api/contas ou /api/contas/123
+    $parts = explode('/', $requestUri);
+    $id = $parts[3] ?? null;
+
+    require __DIR__ . '/api/contas.php';
+
+
+    exit;
+}
+
+if (str_starts_with($requestUri, '/api/transacoes')) {
+    $parts = explode('/', $requestUri);
+    $id = $parts[3] ?? null;
+
+    require __DIR__ . '/api/transacoes.php';
+
+    exit;
+}
+
+http_response_code(404);
+echo json_encode(['error' => 'Rota não encontrada']);
