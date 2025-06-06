@@ -14,7 +14,7 @@ BEGIN
         titular VARCHAR(100) NOT NULL,
         saldo DECIMAL(15,2) NOT NULL DEFAULT 0.00,
         criado_em DATETIME DEFAULT GETDATE(),
-        atualizado_em DATETIME DEFAULT GETDATE()
+        atualizado_em DATETIME
     );
 END
 SQL;
@@ -31,7 +31,7 @@ BEGIN
         descricao VARCHAR(255),
         status VARCHAR(20) NOT NULL DEFAULT 'PENDENTE',
         criado_em DATETIME DEFAULT GETDATE(),
-        atualizado_em DATETIME DEFAULT GETDATE(),
+        atualizado_em DATETIME,
 
         CONSTRAINT FK_ContaOrigem FOREIGN KEY (conta_origem_id) REFERENCES CONTAS(id),
         CONSTRAINT FK_ContaDestino FOREIGN KEY (conta_destino_id) REFERENCES CONTAS(id)
