@@ -10,6 +10,7 @@ if ($requestUri === '' || $requestUri === '/api') {
 $routes = [
     '/api/contas' => '/api/contas.php',
     '/api/transacoes' => '/api/transacoes.php',
+    '/api/transferencia' => '/api/transferencia.php',
 ];
 
 foreach ($routes as $route => $file) {
