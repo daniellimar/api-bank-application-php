@@ -45,8 +45,7 @@ function handlePost(PDO $pdo): void
     try {
         $pdo->beginTransaction();
         $stmt = $pdo->prepare(
-            "INSERT INTO CONTAS (numero_conta, agencia, titular, saldo, criado_em) 
-             VALUES (?, ?, ?, ?, GETDATE())"
+            "INSERT INTO CONTAS (numero_conta, agencia, titular, saldo) VALUES (?, ?, ?, ?)"
         );
         $stmt->execute([
             trim($data['numero_conta']),
