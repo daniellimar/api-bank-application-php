@@ -1,6 +1,6 @@
 FROM php:8.3-apache
 
-RUN docker-php-ext-install mysqli pdo pdo_mysql
+RUN docker-php-ext-install mysqli pdo pdo_mysql bcmath
 RUN a2enmod rewrite
 
 RUN apt-get update && apt-get install -y \
@@ -20,7 +20,6 @@ RUN curl -sSL https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor 
     && apt-get update \
     && ACCEPT_EULA=Y apt-get install -y msodbcsql18
 
-RUN apt-get update && ACCEPT_EULA=Y apt-get install -y msodbcsql18
 
 RUN pecl install sqlsrv-5.12.0 pdo_sqlsrv-5.12.0 \
     && docker-php-ext-enable sqlsrv pdo_sqlsrv
