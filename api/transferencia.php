@@ -30,7 +30,10 @@ function processarTransferencia(PDO $pdo): void
     try {
         $pdo->beginTransaction();
 
-        foreach ([$contaOrigemId, $contaDestinoId] as $contaId) {
+        $contasOrdenadas = [$contaOrigemId, $contaDestinoId];
+        sort($contasOrdenadas);
+
+        foreach ($contasOrdenadas as $contaId) {
             $stmt = $pdo->prepare("SELECT id, saldo FROM CONTAS WITH (UPDLOCK, ROWLOCK) WHERE id = ?");
             $stmt->execute([$contaId]);
             $conta = $stmt->fetch(PDO::FETCH_ASSOC);
