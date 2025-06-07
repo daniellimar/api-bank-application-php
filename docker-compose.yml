@@ -32,14 +32,42 @@ services:
   sqlserver:
     image: mcr.microsoft.com/mssql/server:2022-latest
     environment:
-      SA_PASSWORD: "YourStrong!Passw0rd"
+      SA_PASSWORD: "${SA_PASSWORD}"
       ACCEPT_EULA: "Y"
     ports:
       - "1433:1433"
     volumes:
       - sqlserverdata:/var/opt/mssql
+      - ./scripts:/scripts
     networks:
       - backend
+
+  db-init:
+    image: mcr.microsoft.com/mssql-tools
+    depends_on:
+      - sqlserver
+    entrypoint: /bin/bash
+    command:
+      - -c
+      - |
+        until /opt/mssql-tools/bin/sqlcmd -S sqlserver -U sa -P "$SA_PASSWORD" -Q "SELECT 1" > /dev/null 2>&1; do
+          echo "Esperando SQL Server..."
+          sleep 5
+        done
+
+        echo "Criando tabelas..."
+        /opt/mssql-tools/bin/sqlcmd -S sqlserver -U sa -P "$SA_PASSWORD" -d master -i /scripts/create_tables.sql
+
+        echo "Inserindo dados..."
+        /opt/mssql-tools/bin/sqlcmd -S sqlserver -U sa -P "$SA_PASSWORD" -d master -i /scripts/insert_contas.sql
+
+        echo "Scripts executados com sucesso!"
+    volumes:
+      - ./scripts:/scripts
+    networks:
+      - backend
+    environment:
+      SA_PASSWORD: "${SA_PASSWORD}"
 
 volumes:
   sqlserverdata:
