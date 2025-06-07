@@ -3,7 +3,7 @@ $requestUri = rtrim(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH), '/');
 $method = $_SERVER['REQUEST_METHOD'];
 
 if ($requestUri === '' || $requestUri === '/api') {
-    echo json_encode(['message' => 'API root']);
+    require __DIR__ . '/views/index.php';
     exit;
 }
 
