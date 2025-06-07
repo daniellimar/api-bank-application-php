@@ -18,8 +18,8 @@ try {
         $saldo = rand(500, 2000);
 
         $stmt = $pdo->prepare("
-            INSERT INTO master.dbo.CONTAS (numero_conta, agencia, titular, saldo, criado_em, atualizado_em)
-            VALUES (:numero_conta, :agencia, :titular, :saldo, GETDATE(), GETDATE())
+            INSERT INTO master.dbo.CONTAS (numero_conta, agencia, titular, saldo)
+            VALUES (:numero_conta, :agencia, :titular, :saldo)
         ");
 
         $stmt->execute([
