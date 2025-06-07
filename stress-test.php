@@ -1,39 +1,51 @@
 <?php
 
-$url = 'http://localhost:8080/transferencia.php';
+$baseApiUrl = 'http://127.0.0.1:8080/api';
+$urlContas = $baseApiUrl . '/contas';
+$urlTransferencia = $baseApiUrl . '/transferencia.php';
 
-function enviarTransferencia($url, $contaOrigem, $contaDestino, $valor)
+function pegarContas($url)
 {
-    $data = [
-        'conta_origem_id' => $contaOrigem,
-        'conta_destino_id' => $contaDestino,
-        'valor' => $valor,
-    ];
-
     $ch = curl_init($url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_POST, true);
-    curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
-    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
-
     $response = curl_exec($ch);
     $error = curl_error($ch);
     curl_close($ch);
 
     if ($error) {
-        echo "Erro: $error\n";
-    } else {
-        echo "Resposta: $response\n";
+        die("Erro ao buscar contas: $error\n");
     }
+
+    $data = json_decode($response, true);
+    if ($data === null) {
+        die("Erro ao decodificar JSON das contas\n");
+    }
+
+    return $data;
 }
 
+$contasData = pegarContas($urlContas);
+
+$contasIds = array_column($contasData, 'id');
+
+if (count($contasIds) < 2) {
+    die("Erro: É necessário pelo menos 2 contas para testar transferência.\n");
+}
+
+echo "Contas carregadas: " . implode(', ', $contasIds) . "\n";
+
+function pegarContaDestino(array $contasIds, int $contaOrigem)
+{
+    $destinos = array_filter($contasIds, fn($id) => $id !== $contaOrigem);
+    return $destinos[array_rand($destinos)];
+}
 
 $multiHandle = curl_multi_init();
 $curlHandles = [];
 
-for ($i = 1; $i <= 50; $i++) {
-    $contaOrigem = rand(1, 10);
-    $contaDestino = rand(11, 20);
+for ($i = 0; $i < 50; $i++) {
+    $contaOrigem = $contasIds[array_rand($contasIds)];
+    $contaDestino = pegarContaDestino($contasIds, $contaOrigem);
     $valor = rand(1, 100);
 
     $data = json_encode([
@@ -42,7 +54,7 @@ for ($i = 1; $i <= 50; $i++) {
         'valor' => $valor,
     ]);
 
-    $ch = curl_init($url);
+    $ch = curl_init($urlTransferencia);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_POST, true);
     curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
@@ -52,7 +64,7 @@ for ($i = 1; $i <= 50; $i++) {
     $curlHandles[] = $ch;
 }
 
-$running = 0;
+$running = null;
 do {
     curl_multi_exec($multiHandle, $running);
     curl_multi_select($multiHandle);
@@ -60,7 +72,9 @@ do {
 
 foreach ($curlHandles as $ch) {
     $response = curl_multi_getcontent($ch);
-    echo "Resposta: $response\n";
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    echo "HTTP $httpCode - Resposta: $response\n";
+
     curl_multi_remove_handle($multiHandle, $ch);
     curl_close($ch);
 }
