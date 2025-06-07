@@ -8,7 +8,8 @@ if ($requestUri === '' || $requestUri === '/api') {
 }
 
 $routes = [
-    '/api/criar-contas' => '/api/factory/criar-contas.php',
+    '/api/factory/criar-tabelas' => '/api/factory/criar-tabelas.php',
+    '/api/factory/criar-contas' => '/api/factory/criar-contas.php',
 
     '/api/contas' => '/api/contas.php',
     '/api/transacoes' => '/api/transacoes.php',
