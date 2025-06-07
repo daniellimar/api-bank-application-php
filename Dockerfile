@@ -4,11 +4,11 @@ RUN docker-php-ext-install mysqli pdo pdo_mysql bcmath
 RUN a2enmod rewrite
 
 RUN apt-get update && apt-get install -y \
-    unixodbc-dev \
-    gnupg2 \
-    curl \
     apt-transport-https \
+    curl \
+    gnupg2 \
     ca-certificates \
+    unixodbc-dev \
     libgssapi-krb5-2 \
     build-essential \
     pkg-config \
@@ -16,11 +16,15 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 RUN curl -sSL https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > /usr/share/keyrings/microsoft.gpg \
-    && echo "deb [arch=amd64 signed-by=/usr/share/keyrings/microsoft.gpg] https://packages.microsoft.com/debian/12/prod bookworm main" > /etc/apt/sources.list.d/mssql-release.list \
-    && apt-get update \
-    && ACCEPT_EULA=Y apt-get install -y msodbcsql18
+    && echo "deb [arch=amd64 signed-by=/usr/share/keyrings/microsoft.gpg] https://packages.microsoft.com/debian/12/prod bookworm main" > /etc/apt/sources.list.d/mssql-release.list
 
+RUN apt-get update \
+    && ACCEPT_EULA=Y apt-get install -y msodbcsql18 mssql-tools \
+    && rm -rf /var/lib/apt/lists/*
 
+ENV PATH="$PATH:/opt/mssql-tools/bin"
+
+RUN docker-php-ext-install mysqli pdo pdo_mysql bcmath
 RUN pecl install sqlsrv-5.12.0 pdo_sqlsrv-5.12.0 \
     && docker-php-ext-enable sqlsrv pdo_sqlsrv
 
