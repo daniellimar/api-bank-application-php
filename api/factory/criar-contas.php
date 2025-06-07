@@ -8,7 +8,7 @@ try {
 
     $pdo->beginTransaction();
 
-    $quantidade = 20;
+    $quantidade = 150;
     $contasCriadas = [];
 
     for ($i = 1; $i <= $quantidade; $i++) {
