@@ -30,10 +30,14 @@ RUN pecl install sqlsrv-5.12.0 pdo_sqlsrv-5.12.0 \
 COPY . /var/www/html/
 
 RUN chown -R www-data:www-data /var/www/html \
-    && chmod -R 755 /var/www/html \
-    && find /var/www/html -type f -name ".htaccess" -exec chmod 644 {} \;
+    && chmod 755 /var/www/html \
+    && find /var/www/html -type d -exec chmod 755 {} \; \
+    && find /var/www/html -type f -exec chmod 644 {} \;
 
-RUN sed -i 's/AllowOverride None/AllowOverride All/g' /etc/apache2/apache2.conf
+RUN find /var/www/html -type f -name ".htaccess" -exec chmod 644 {} \;
+
+RUN a2enmod rewrite \
+    && sed -i 's/AllowOverride None/AllowOverride All/g' /etc/apache2/apache2.conf
 
 WORKDIR /var/www/html
 
