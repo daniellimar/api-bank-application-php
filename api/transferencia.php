@@ -48,7 +48,7 @@ function processarTransferencia(PDO $pdo): void
         $saldoDestino = $contaDestino['saldo'];
 
         if (bccomp($saldoOrigem, (string)$valor, 2) < 0) {
-            registrarTransacao($pdo, $contaOrigemId, $contaDestinoId, $valor, 'Saldo insuficiente para transferência', 'CANCELADA');
+            registrarTransacaoCanceladaSeparada($contaOrigemId, $contaDestinoId, $valor, 'Saldo insuficiente para transferência', 'CANCELADA');
             $pdo->rollBack();
             sendResponse(400, ['error' => 'Saldo insuficiente para transferência']);
         }
@@ -127,4 +127,20 @@ function formatarValorParaString(string $valorStr): string
     }
 
     return number_format((float)$valorStr, 2, '.', '');
+}
+
+function registrarTransacaoCanceladaSeparada(int $contaOrigemId, int $contaDestinoId, float $valor, string $descricao, string $status): void
+{
+    $pdo2 = conectar();
+    try {
+        $pdo2->beginTransaction();
+
+        $stmt = $pdo2->prepare("INSERT INTO TRANSACOES (conta_origem_id, conta_destino_id, valor, descricao, status) VALUES (?, ?, ?, ?, ?)");
+        $stmt->execute([$contaOrigemId, $contaDestinoId, $valor, $descricao, $status]);
+
+        $pdo2->commit();
+    } catch (Exception $e) {
+        $pdo2->rollBack();
+        throw $e;
+    }
 }
