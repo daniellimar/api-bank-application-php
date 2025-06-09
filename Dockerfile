@@ -24,17 +24,18 @@ RUN apt-get update \
 
 ENV PATH="$PATH:/opt/mssql-tools/bin"
 
-RUN docker-php-ext-install mysqli pdo pdo_mysql bcmath
 RUN pecl install sqlsrv-5.12.0 pdo_sqlsrv-5.12.0 \
     && docker-php-ext-enable sqlsrv pdo_sqlsrv
 
-RUN a2enmod rewrite
-
 COPY . /var/www/html/
 
-WORKDIR /var/www/html
+RUN chown -R www-data:www-data /var/www/html \
+    && chmod -R 755 /var/www/html \
+    && find /var/www/html -type f -name ".htaccess" -exec chmod 644 {} \;
 
-RUN chown -R www-data:www-data /var/www/html
+RUN sed -i 's/AllowOverride None/AllowOverride All/g' /etc/apache2/apache2.conf
+
+WORKDIR /var/www/html
 
 EXPOSE 80
 
